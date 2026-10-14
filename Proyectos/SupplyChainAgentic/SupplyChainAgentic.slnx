@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Elementos de la solución/">
+    <File Path="SupplyChainAgentic.py" />
+    <File Path="SupplyChainAgentic/tests/test_inventory_agent.py" />
+  </Folder>
+  <Project Path="SupplyChainAgentic/SupplyChainAgentic.pyproj" Type="888888a0-9f3d-457c-b088-3a5042f75d52" Id="24fb2243-d948-42df-8f23-95d39b6616bb">
+    <Build Project="false" />
+  </Project>
+</Solution>
