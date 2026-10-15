@@ -36,3 +36,6 @@ Thumbs.db
 
 # Base de datos de usuarios
 supplychain_users.db
+
+# Copia antigua del proyecto
+/Proyectos/
