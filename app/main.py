@@ -11,6 +11,12 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
 from app.auth.database import initialize_database, get_db_connection
+from app.supply_chain_database import (
+    initialize_supply_chain_database,
+    save_supply_chain_analysis,
+)
+
+
 from app.auth.dependencies import get_current_user
 from app.auth.routes import router as auth_router
 from app.auth.security import (
@@ -18,6 +24,7 @@ from app.auth.security import (
     create_access_token,
     decode_access_token,
 )
+
 from app.orchestration.supply_chain_graph import build_supply_chain_graph
 
 
@@ -25,8 +32,8 @@ from app.orchestration.supply_chain_graph import build_supply_chain_graph
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     initialize_database()
+    initialize_supply_chain_database()
     yield
-
 
 # Aplicación FastAPI
 app = FastAPI(
@@ -286,18 +293,29 @@ def analyze_supply_chain(
             "forecast_comparison": {},
             "inventory_result": {},
             "purchasing_result": {},
+            "sourcing_result": {},
+            "logistics_result": {},
         }
 
         result = graph.invoke(initial_state)
 
-        return {
+        response = {
             "product_id": result["product_id"],
             "demand_analysis": result["demand_result"],
             "ai_demand_analysis": result["ai_demand_result"],
             "forecast_comparison": result["forecast_comparison"],
             "inventory_analysis": result["inventory_result"],
             "supplier_analysis": result["supplier_result"],
+            "sourcing_analysis": result.get("sourcing_result", {}),
+            "logistics_analysis": result.get("logistics_result", {}),
             "purchasing_analysis": result["purchasing_result"],
+        }
+
+        analysis_id = save_supply_chain_analysis(response)
+
+        return {
+            **response,
+            "analysis_id": analysis_id,
         }
 
     except ValueError as error:
