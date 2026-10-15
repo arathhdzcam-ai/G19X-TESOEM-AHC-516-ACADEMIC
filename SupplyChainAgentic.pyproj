@@ -1,0 +1,67 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>24fb2243-d948-42df-8f23-95d39b6616bb</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>
+    </StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>SupplyChainAgentic</Name>
+    <RootNamespace>SupplyChainAgentic</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="app\agents\ai_demand_agent.py" />
+    <Compile Include="app\agents\demand_agent.py" />
+    <Compile Include="app\agents\inventory_agent.py" />
+    <Compile Include="app\agents\purchasing_agent.py" />
+    <Compile Include="app\agents\supplier_monitoring_agent.py" />
+    <Compile Include="app\auth\config.py" />
+    <Compile Include="app\auth\database.py" />
+    <Compile Include="app\auth\dependencies.py" />
+    <Compile Include="app\auth\routes.py" />
+    <Compile Include="app\auth\security.py" />
+    <Compile Include="app\auth\__init__.py" />
+    <Compile Include="app\core\azure_openai.py" />
+    <Compile Include="app\main.py" />
+    <Compile Include="app\orchestration\supply_chain_graph.py" />
+    <Compile Include="app\test_ai_demand.py" />
+    <Compile Include="app\test_connection.py" />
+    <Compile Include="app\ui.py" />
+    <Compile Include="test_azure.py" />
+    <Compile Include="test_supplier_agent.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="app\" />
+    <Folder Include="app\agents\" />
+    <Folder Include="app\core\" />
+    <Folder Include="app\auth\" />
+    <Folder Include="app\static\" />
+    <Folder Include="app\templates\" />
+    <Folder Include="app\orchestration\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="app\static\login.css" />
+    <Content Include="app\templates\login.html" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>

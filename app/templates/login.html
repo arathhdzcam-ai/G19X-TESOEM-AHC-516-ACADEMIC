@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión | SupplyChainAgentic</title>
+    <link rel="stylesheet" href="/static/login.css">
+</head>
+<body>
+    <main class="login-container">
+        <section class="brand-panel">
+            <div class="brand-logo">SC</div>
+            <p class="eyebrow">PLATAFORMA INTELIGENTE</p>
+            <h1>SupplyChain<span>Agentic</span></h1>
+            <p class="description">
+                Inteligencia artificial para una cadena de suministro
+                más eficiente, conectada y resiliente.
+            </p>
+
+            <div class="features">
+                <p>01 &nbsp; Pronóstico de demanda</p>
+                <p>02 &nbsp; Gestión de inventarios</p>
+                <p>03 &nbsp; Análisis de proveedores</p>
+            </div>
+        </section>
+
+        <section class="form-panel">
+            <form action="/login" method="post" class="login-form">
+                <p class="eyebrow">PORTAL DE OPERACIONES</p>
+                <h2>Bienvenido de nuevo</h2>
+                <p class="subtitle">Ingresa tus credenciales para continuar.</p>
+
+                {% if error %}
+                <div class="error-message" role="alert">{{ error }}</div>
+                {% endif %}
+
+                <label for="email">Correo electrónico</label>
+                <input id="email"
+                       name="email"
+                       type="email"
+                       placeholder="nombre@empresa.com"
+                       autocomplete="username"
+                       required>
+
+                <label for="password">Contraseña</label>
+                <input id="password"
+                       name="password"
+                       type="password"
+                       placeholder="Ingresa tu contraseña"
+                       autocomplete="current-password"
+                       required>
+
+                <button type="submit">Iniciar sesión <span>→</span></button>
+
+                <p class="security-note">
+                    Acceso protegido mediante autenticación.
+                </p>
+            </form>
+
+            <footer>SupplyChainAgentic · Gestión inteligente</footer>
+        </section>
+    </main>
+</body>
+</html>

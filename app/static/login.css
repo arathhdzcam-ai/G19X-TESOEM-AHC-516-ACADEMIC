@@ -1,0 +1,182 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #17243a;
+    background: #f5f7fb;
+}
+
+.login-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+}
+
+.brand-panel {
+    padding: 60px clamp(30px, 7vw, 90px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+    background: linear-gradient(145deg, #101e35, #183d5c 65%, #126d78);
+}
+
+.brand-logo {
+    display: grid;
+    place-items: center;
+    width: 55px;
+    height: 55px;
+    margin-bottom: 38px;
+    border: 1px solid #79d5d0;
+    border-radius: 15px;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.eyebrow {
+    color: #168b91;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.brand-panel .eyebrow {
+    color: #79d5d0;
+}
+
+h1 {
+    margin: 14px 0;
+    font-size: clamp(36px, 4vw, 56px);
+    letter-spacing: -2px;
+}
+
+    h1 span {
+        display: block;
+        color: #79d5d0;
+    }
+
+.description {
+    max-width: 430px;
+    color: #d0dbe7;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.features {
+    margin-top: 35px;
+    color: #e2edf5;
+    font-size: 13px;
+}
+
+    .features p {
+        margin: 20px 0;
+    }
+
+.form-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 35px;
+}
+
+.login-form {
+    width: 100%;
+    max-width: 390px;
+}
+
+h2 {
+    margin: 15px 0 10px;
+    font-size: 34px;
+    letter-spacing: -1px;
+}
+
+.subtitle {
+    margin-bottom: 32px;
+    color: #758196;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+label {
+    display: block;
+    margin: 20px 0 9px;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #dce3ec;
+    border-radius: 9px;
+    background: white;
+    font-size: 14px;
+}
+
+    input:focus {
+        outline: 2px solid #168b9140;
+        border-color: #168b91;
+    }
+
+button {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    padding: 15px 18px;
+    border: none;
+    border-radius: 9px;
+    background: #126d78;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+    button:hover {
+        background: #0d5864;
+    }
+
+.error-message {
+    padding: 12px;
+    border-radius: 8px;
+    background: #fff0f0;
+    color: #a32222;
+    font-size: 13px;
+}
+
+.security-note {
+    margin-top: 24px;
+    color: #758196;
+    text-align: center;
+    font-size: 12px;
+}
+
+footer {
+    margin-top: 55px;
+    color: #8994a5;
+    text-align: center;
+    font-size: 11px;
+}
+
+@media (max-width: 760px) {
+    .login-container {
+        grid-template-columns: 1fr;
+    }
+
+    .brand-panel {
+        display: none;
+    }
+
+    .form-panel {
+        min-height: 100vh;
+        padding: 25px;
+    }
+}
