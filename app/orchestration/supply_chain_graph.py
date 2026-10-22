@@ -1,5 +1,6 @@
 
 from typing import TypedDict
+import math
 
 from langgraph.graph import StateGraph, START, END
 
@@ -29,6 +30,47 @@ class SupplyChainState(TypedDict):
     purchasing_result: dict
     sourcing_result: dict
     logistics_result: dict
+
+
+
+
+def get_safe_ai_forecast(state: SupplyChainState) -> float:
+    """Obtiene el pronóstico de IA o usa el tradicional como respaldo."""
+
+    ai_result = state.get("ai_demand_result") or {}
+    analysis = ai_result.get("analysis") or {}
+    forecast = analysis.get("forecast_demand")
+
+    if (
+        isinstance(forecast, (int, float))
+        and not isinstance(forecast, bool)
+        and math.isfinite(forecast)
+        and forecast >= 0
+    ):
+        return float(forecast)
+
+    # Respaldo: pronóstico tradicional de DemandAgent.
+    demand_result = state.get("demand_result") or {}
+    traditional_forecasts = demand_result.get("forecast") or []
+
+    if traditional_forecasts:
+        fallback = traditional_forecasts[0]
+    else:
+        fallback = demand_result.get("average_demand")
+
+    if (
+        isinstance(fallback, (int, float))
+        and not isinstance(fallback, bool)
+        and math.isfinite(fallback)
+        and fallback >= 0
+    ):
+        return float(fallback)
+
+    raise ValueError(
+        "No existe un pronóstico válido de IA ni un pronóstico "
+        "tradicional para continuar el análisis."
+    )
+
 
 
 def analyze_supplier(state: SupplyChainState) -> SupplyChainState:
@@ -64,9 +106,10 @@ def analyze_ai_demand(state: SupplyChainState) -> SupplyChainState:
     return {**state, "ai_demand_result": result}
 
 
+
 def compare_forecasts(state: SupplyChainState) -> SupplyChainState:
     traditional_forecast = state["demand_result"]["forecast"][0]
-    ai_forecast = state["ai_demand_result"]["analysis"]["forecast_demand"]
+    ai_forecast = get_safe_ai_forecast(state)
 
     return {
         **state,
@@ -78,8 +121,10 @@ def compare_forecasts(state: SupplyChainState) -> SupplyChainState:
     }
 
 
+
+
 def analyze_inventory(state: SupplyChainState) -> SupplyChainState:
-    forecast_demand = state["ai_demand_result"]["analysis"]["forecast_demand"]
+    forecast_demand = get_safe_ai_forecast(state)
 
     agent = InventoryAgent(safety_stock=20)
     result = agent.analyze(
@@ -90,8 +135,10 @@ def analyze_inventory(state: SupplyChainState) -> SupplyChainState:
     return {**state, "inventory_result": result}
 
 
+
+
 def analyze_sourcing(state: SupplyChainState) -> SupplyChainState:
-    forecast_demand = state["ai_demand_result"]["analysis"]["forecast_demand"]
+    forecast_demand = get_safe_ai_forecast(state)
 
     agent = SourcingAgent()
     result = agent.analyze(
@@ -105,6 +152,7 @@ def analyze_sourcing(state: SupplyChainState) -> SupplyChainState:
     return {**state, "sourcing_result": result}
 
 
+
 def analyze_logistics(state: SupplyChainState) -> SupplyChainState:
     agent = LogisticsAgent()
     result = agent.analyze(
@@ -116,8 +164,12 @@ def analyze_logistics(state: SupplyChainState) -> SupplyChainState:
     return {**state, "logistics_result": result}
 
 
+
 def analyze_purchasing(state: SupplyChainState) -> SupplyChainState:
-    recommended_order = state["inventory_result"]["recommended_order"]
+    sourcing_result = state["sourcing_result"]
+
+    # Usar la cantidad que abastecimiento puede suministrar.
+    recommended_order = sourcing_result["recommended_quantity"]
 
     agent = PurchasingAgent()
     result = agent.recommend_purchase(
@@ -125,7 +177,12 @@ def analyze_purchasing(state: SupplyChainState) -> SupplyChainState:
         quantity=recommended_order,
     )
 
+    # Conservar la información del abastecimiento
+    # para poder identificar faltantes pendientes.
+    result["unmet_quantity"] = sourcing_result["unmet_quantity"]
+
     return {**state, "purchasing_result": result}
+
 
 
 def should_purchase(state: SupplyChainState) -> str:

@@ -57,6 +57,7 @@ def save_supply_chain_analysis(result: dict) -> int:
         return cursor.lastrowid
 
 
+
 def get_supply_chain_analysis(analysis_id: int) -> dict | None:
     """Recupera un análisis guardado por su identificador."""
     with sqlite3.connect(SUPPLY_CHAIN_DATABASE_PATH) as connection:
@@ -81,3 +82,39 @@ def get_supply_chain_analysis(analysis_id: int) -> dict | None:
         "created_at": row["created_at"],
         "result": json.loads(row["result_json"]),
     }
+
+
+def list_supply_chain_analyses(
+    limit: int = 20,
+    offset: int = 0,
+) -> list[dict]:
+    """Recupera el historial de análisis con paginación."""
+    if not 1 <= limit <= 100:
+        raise ValueError("limit debe estar entre 1 y 100.")
+
+    if offset < 0:
+        raise ValueError("offset no puede ser negativo.")
+
+    with sqlite3.connect(SUPPLY_CHAIN_DATABASE_PATH) as connection:
+        connection.row_factory = sqlite3.Row
+
+        rows = connection.execute(
+            """
+            SELECT id, product_id, supplier_id, created_at, result_json
+            FROM supply_chain_analyses
+            ORDER BY id DESC
+            LIMIT ? OFFSET ?
+            """,
+            (limit, offset),
+        ).fetchall()
+
+    return [
+        {
+            "id": row["id"],
+            "product_id": row["product_id"],
+            "supplier_id": row["supplier_id"],
+            "created_at": row["created_at"],
+            "result": json.loads(row["result_json"]),
+        }
+        for row in rows
+    ]

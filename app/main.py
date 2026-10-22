@@ -8,12 +8,14 @@ from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.auth.database import initialize_database, get_db_connection
 from app.supply_chain_database import (
     initialize_supply_chain_database,
     save_supply_chain_analysis,
+    get_supply_chain_analysis,
+    list_supply_chain_analyses,
 )
 
 
@@ -62,6 +64,8 @@ app.mount(
 
 
 # Modelo de entrada para el análisis de Supply Chain
+from pydantic import BaseModel, Field, field_validator
+
 class DemandRequest(BaseModel):
     product_id: str = Field(min_length=1, max_length=100)
     historical_demand: list[float] = Field(min_length=1, max_length=1000)
@@ -72,6 +76,20 @@ class DemandRequest(BaseModel):
     quality_rate: float = Field(ge=0, le=1)
     supplier_capacity: float = Field(ge=0)
 
+    @field_validator("product_id", "supplier_id")
+    @classmethod
+    def validate_identifiers(cls, value: str) -> str:
+        value = value.strip()
+
+        if not value:
+            raise ValueError("El identificador es obligatorio.")
+
+        if value.casefold() == "string":
+            raise ValueError(
+                "Reemplaza el valor de ejemplo 'string' por un identificador real."
+            )
+
+        return value
 
 # Página principal de la API
 @app.get("/")
@@ -270,6 +288,7 @@ def logout():
 
 
 # Análisis de Supply Chain: conserva la protección existente
+
 @app.post("/api/supply-chain/analyze")
 def analyze_supply_chain(
     request: DemandRequest,
@@ -311,8 +330,10 @@ def analyze_supply_chain(
             "purchasing_analysis": result["purchasing_result"],
         }
 
+        # Guardar el análisis en la base de datos.
         analysis_id = save_supply_chain_analysis(response)
 
+        # Devolver el resultado junto con su identificador.
         return {
             **response,
             "analysis_id": analysis_id,
@@ -323,3 +344,58 @@ def analyze_supply_chain(
             status_code=400,
             detail=str(error),
         )
+
+
+# Consultar el historial de análisis de Supply Chain.
+@app.get("/api/supply-chain/history")
+def get_supply_chain_history(
+    limit: int = 20,
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user),
+):
+    if not 1 <= limit <= 100:
+        raise HTTPException(
+            status_code=422,
+            detail="limit debe estar entre 1 y 100.",
+        )
+
+    if offset < 0:
+        raise HTTPException(
+            status_code=422,
+            detail="offset no puede ser negativo.",
+        )
+
+    analyses = list_supply_chain_analyses(
+        limit=limit,
+        offset=offset,
+    )
+
+    return {
+        "items": analyses,
+        "limit": limit,
+        "offset": offset,
+        "count": len(analyses),
+    }
+
+
+# Consultar un análisis específico por su identificador.
+@app.get("/api/supply-chain/history/{analysis_id}")
+def get_supply_chain_analysis_by_id(
+    analysis_id: int,
+    current_user: dict = Depends(get_current_user),
+):
+    if analysis_id < 1:
+        raise HTTPException(
+            status_code=422,
+            detail="analysis_id debe ser un entero positivo.",
+        )
+
+    analysis = get_supply_chain_analysis(analysis_id)
+
+    if analysis is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No se encontró el análisis solicitado.",
+        )
+
+    return analysis

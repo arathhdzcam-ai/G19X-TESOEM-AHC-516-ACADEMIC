@@ -25,7 +25,9 @@
     <Compile Include="app\agents\ai_demand_agent.py" />
     <Compile Include="app\agents\demand_agent.py" />
     <Compile Include="app\agents\inventory_agent.py" />
+    <Compile Include="app\agents\logistics_agent.py" />
     <Compile Include="app\agents\purchasing_agent.py" />
+    <Compile Include="app\agents\sourcing_agent.py" />
     <Compile Include="app\agents\supplier_monitoring_agent.py" />
     <Compile Include="app\auth\config.py" />
     <Compile Include="app\auth\database.py" />
@@ -36,6 +38,7 @@
     <Compile Include="app\core\azure_openai.py" />
     <Compile Include="app\main.py" />
     <Compile Include="app\orchestration\supply_chain_graph.py" />
+    <Compile Include="app\supply_chain_database.py" />
     <Compile Include="app\test_ai_demand.py" />
     <Compile Include="app\test_connection.py" />
     <Compile Include="app\ui.py" />
