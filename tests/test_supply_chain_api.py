@@ -34,7 +34,7 @@ def api_client(tmp_path, monkeypatch):
 
     # Simular un usuario autenticado, sin modificar el login.
     app.dependency_overrides[get_current_user] = (
-        lambda: {"user_id": 1, "email": "test@example.com"}
+        lambda: {"id": 1, "email": "test@example.com"}
     )
 
     with TestClient(app) as client:
@@ -200,3 +200,35 @@ def test_analyze_rejects_invalid_identifiers(
     )
 
     assert response.status_code == 422
+
+def test_api_history_is_isolated_between_users(api_client, monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "build_supply_chain_graph",
+        lambda: FakeGraph(),
+    )
+
+    # El usuario 1 crea un análisis.
+    created = api_client.post(
+        "/api/supply-chain/analyze",
+        json=valid_payload(),
+    )
+    assert created.status_code == 200
+    analysis_id = created.json()["analysis_id"]
+
+    # Cambiamos al usuario 2 sin modificar el sistema de login.
+    app.dependency_overrides[get_current_user] = (
+        lambda: {"id": 2, "email": "other@example.com"}
+    )
+
+    # El historial del usuario 2 no debe mostrar el análisis del usuario 1.
+    history = api_client.get("/api/supply-chain/history")
+    assert history.status_code == 200
+    assert history.json()["count"] == 0
+    assert history.json()["items"] == []
+
+    # Tampoco debe poder consultar directamente ese análisis.
+    detail = api_client.get(
+        f"/api/supply-chain/history/{analysis_id}"
+    )
+    assert detail.status_code == 404

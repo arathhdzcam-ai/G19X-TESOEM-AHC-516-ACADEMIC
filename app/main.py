@@ -30,14 +30,14 @@ from app.auth.security import (
 from app.orchestration.supply_chain_graph import build_supply_chain_graph
 
 
-# Inicialización de la base de datos
+# InicializaciÃ³n de la base de datos
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     initialize_database()
     initialize_supply_chain_database()
     yield
 
-# Aplicación FastAPI
+# AplicaciÃ³n FastAPI
 app = FastAPI(
     title="Supply Chain Agentic API",
     description="API para la arquitectura Agentic de Supply Chain",
@@ -45,11 +45,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Rutas de autenticación que ya existían
+# Rutas de autenticaciÃ³n que ya existÃ­an
 app.include_router(auth_router)
 
 
-# Configuración de HTML y archivos estáticos
+# ConfiguraciÃ³n de HTML y archivos estÃ¡ticos
 BASE_DIR = Path(__file__).resolve().parent
 
 templates = Jinja2Templates(
@@ -63,7 +63,7 @@ app.mount(
 )
 
 
-# Modelo de entrada para el análisis de Supply Chain
+# Modelo de entrada para el anÃ¡lisis de Supply Chain
 from pydantic import BaseModel, Field, field_validator
 
 class DemandRequest(BaseModel):
@@ -91,7 +91,7 @@ class DemandRequest(BaseModel):
 
         return value
 
-# Página principal de la API
+# PÃ¡gina principal de la API
 @app.get("/")
 def root():
     return {
@@ -107,7 +107,7 @@ def health():
     return {"status": "healthy"}
 
 
-# Mostrar el formulario de inicio de sesión
+# Mostrar el formulario de inicio de sesiÃ³n
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
     return templates.TemplateResponse(
@@ -136,7 +136,7 @@ def login_form(
             (email,),
         ).fetchone()
 
-    # Mensaje genérico para credenciales incorrectas
+    # Mensaje genÃ©rico para credenciales incorrectas
     if (
         user is None
         or not verify_password(password, user["password_hash"])
@@ -146,12 +146,12 @@ def login_form(
             request=request,
             name="login.html",
             context={
-                "error": "Correo o contraseña incorrectos, o cuenta desactivada."
+                "error": "Correo o contraseÃ±a incorrectos, o cuenta desactivada."
             },
             status_code=401,
         )
 
-    # Crear un JWT utilizando el sistema de autenticación existente
+    # Crear un JWT utilizando el sistema de autenticaciÃ³n existente
     token = create_access_token(
         user_id=user["id"],
         email=user["email"],
@@ -175,7 +175,7 @@ def login_form(
     return response
 
 
-# Panel protegido: requiere una sesión válida
+# Panel protegido: requiere una sesiÃ³n vÃ¡lida
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request):
     token = request.cookies.get("access_token")
@@ -265,10 +265,10 @@ def dashboard(request: Request):
             <main>
                 <h1>SupplyChainAgentic</h1>
                 <h2>Bienvenido al panel principal</h2>
-                <p>Sesión iniciada como:
+                <p>SesiÃ³n iniciada como:
                    <strong>{safe_email}</strong></p>
                 <p>Tu acceso a la plataforma ha sido validado.</p>
-                <a class="logout" href="/logout">Cerrar sesión</a>
+                <a class="logout" href="/logout">Cerrar sesiÃ³n</a>
             </main>
         </body>
         </html>
@@ -276,7 +276,7 @@ def dashboard(request: Request):
     )
 
 
-# Cerrar la sesión
+# Cerrar la sesiÃ³n
 @app.get("/logout")
 def logout():
     response = RedirectResponse(
@@ -287,7 +287,7 @@ def logout():
     return response
 
 
-# Análisis de Supply Chain: conserva la protección existente
+# AnÃ¡lisis de Supply Chain: conserva la protecciÃ³n existente
 
 @app.post("/api/supply-chain/analyze")
 def analyze_supply_chain(
@@ -330,9 +330,12 @@ def analyze_supply_chain(
             "purchasing_analysis": result["purchasing_result"],
         }
 
-        # Guardar el análisis en la base de datos.
-        analysis_id = save_supply_chain_analysis(response)
+        # Guardar el anÃ¡lisis en la base de datos.
 
+        analysis_id = save_supply_chain_analysis(
+            response,
+            user_id=current_user["id"],
+        )
         # Devolver el resultado junto con su identificador.
         return {
             **response,
@@ -346,7 +349,8 @@ def analyze_supply_chain(
         )
 
 
-# Consultar el historial de análisis de Supply Chain.
+# Consultar el historial de anÃ¡lisis de Supply Chain.
+
 @app.get("/api/supply-chain/history")
 def get_supply_chain_history(
     limit: int = 20,
@@ -366,6 +370,7 @@ def get_supply_chain_history(
         )
 
     analyses = list_supply_chain_analyses(
+        user_id=current_user["id"],
         limit=limit,
         offset=offset,
     )
@@ -378,7 +383,9 @@ def get_supply_chain_history(
     }
 
 
-# Consultar un análisis específico por su identificador.
+
+
+# Consultar un anÃ¡lisis especÃ­fico por su identificador.
 @app.get("/api/supply-chain/history/{analysis_id}")
 def get_supply_chain_analysis_by_id(
     analysis_id: int,
@@ -390,12 +397,17 @@ def get_supply_chain_analysis_by_id(
             detail="analysis_id debe ser un entero positivo.",
         )
 
-    analysis = get_supply_chain_analysis(analysis_id)
+
+    analysis = get_supply_chain_analysis(
+        analysis_id,
+        user_id=current_user["id"],
+    )
+
 
     if analysis is None:
         raise HTTPException(
             status_code=404,
-            detail="No se encontró el análisis solicitado.",
+            detail="No se encontrÃ³ el anÃ¡lisis solicitado.",
         )
 
     return analysis

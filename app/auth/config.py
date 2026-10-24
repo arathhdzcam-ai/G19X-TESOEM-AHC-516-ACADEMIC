@@ -2,8 +2,14 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Directorio raíz del proyecto
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+# Cargar las variables de .env antes de leer la configuración.
+# override=False conserva las variables ya definidas en Windows.
+load_dotenv(PROJECT_ROOT / ".env", override=False)
 
 # Base de datos local SQLite
 DATABASE_PATH = PROJECT_ROOT / "supplychain_users.db"

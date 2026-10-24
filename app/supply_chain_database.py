@@ -12,7 +12,7 @@ SUPPLY_CHAIN_DATABASE_PATH = PROJECT_ROOT / "supply_chain_data.db"
 
 
 def initialize_supply_chain_database():
-    """Crea la tabla de historial de análisis si no existe."""
+    """Crea o actualiza la tabla de historial sin eliminar registros."""
     with sqlite3.connect(SUPPLY_CHAIN_DATABASE_PATH) as connection:
         connection.execute(
             """
@@ -21,14 +21,41 @@ def initialize_supply_chain_database():
                 product_id TEXT NOT NULL,
                 supplier_id TEXT,
                 created_at TEXT NOT NULL,
-                result_json TEXT NOT NULL
+                result_json TEXT NOT NULL,
+                user_id INTEGER
             )
             """
         )
 
+        columns = {
+            row[1]
+            for row in connection.execute(
+                "PRAGMA table_info(supply_chain_analyses)"
+            ).fetchall()
+        }
 
-def save_supply_chain_analysis(result: dict) -> int:
-    """Guarda el resultado completo y devuelve su identificador."""
+        # Los registros anteriores conservan sus datos.
+        # Su propietario queda sin asignar hasta una migración segura.
+        if "user_id" not in columns:
+            connection.execute(
+                "ALTER TABLE supply_chain_analyses "
+                "ADD COLUMN user_id INTEGER"
+            )
+
+
+def _validate_user_id(user_id: int) -> None:
+    if (
+        not isinstance(user_id, int)
+        or isinstance(user_id, bool)
+        or user_id <= 0
+    ):
+        raise ValueError("user_id debe ser un entero positivo.")
+
+
+def save_supply_chain_analysis(result: dict, user_id: int) -> int:
+    """Guarda un análisis asociado al usuario autenticado."""
+    _validate_user_id(user_id)
+
     product_id = result.get("product_id")
 
     if not product_id:
@@ -47,19 +74,24 @@ def save_supply_chain_analysis(result: dict) -> int:
                 product_id,
                 supplier_id,
                 created_at,
-                result_json
+                result_json,
+                user_id
             )
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (product_id, supplier_id, created_at, result_json),
+            (product_id, supplier_id, created_at, result_json, user_id),
         )
 
         return cursor.lastrowid
 
 
+def get_supply_chain_analysis(
+    analysis_id: int,
+    user_id: int,
+) -> dict | None:
+    """Recupera un análisis únicamente si pertenece al usuario."""
+    _validate_user_id(user_id)
 
-def get_supply_chain_analysis(analysis_id: int) -> dict | None:
-    """Recupera un análisis guardado por su identificador."""
     with sqlite3.connect(SUPPLY_CHAIN_DATABASE_PATH) as connection:
         connection.row_factory = sqlite3.Row
 
@@ -67,9 +99,9 @@ def get_supply_chain_analysis(analysis_id: int) -> dict | None:
             """
             SELECT id, product_id, supplier_id, created_at, result_json
             FROM supply_chain_analyses
-            WHERE id = ?
+            WHERE id = ? AND user_id = ?
             """,
-            (analysis_id,),
+            (analysis_id, user_id),
         ).fetchone()
 
     if row is None:
@@ -85,10 +117,13 @@ def get_supply_chain_analysis(analysis_id: int) -> dict | None:
 
 
 def list_supply_chain_analyses(
+    user_id: int,
     limit: int = 20,
     offset: int = 0,
 ) -> list[dict]:
-    """Recupera el historial de análisis con paginación."""
+    """Lista únicamente los análisis del usuario autenticado."""
+    _validate_user_id(user_id)
+
     if not 1 <= limit <= 100:
         raise ValueError("limit debe estar entre 1 y 100.")
 
@@ -102,10 +137,11 @@ def list_supply_chain_analyses(
             """
             SELECT id, product_id, supplier_id, created_at, result_json
             FROM supply_chain_analyses
+            WHERE user_id = ?
             ORDER BY id DESC
             LIMIT ? OFFSET ?
             """,
-            (limit, offset),
+            (user_id, limit, offset),
         ).fetchall()
 
     return [
