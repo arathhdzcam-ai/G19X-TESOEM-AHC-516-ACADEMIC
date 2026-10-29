@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
 from pydantic import BaseModel, Field, field_validator
 
 from app.auth.database import initialize_database, get_db_connection
@@ -30,14 +31,14 @@ from app.auth.security import (
 from app.orchestration.supply_chain_graph import build_supply_chain_graph
 
 
-# InicializaciÃ³n de la base de datos
+# Inicializacion de la base de datos
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     initialize_database()
     initialize_supply_chain_database()
     yield
 
-# AplicaciÃ³n FastAPI
+# Aplicacion FastAPI
 app = FastAPI(
     title="Supply Chain Agentic API",
     description="API para la arquitectura Agentic de Supply Chain",
@@ -45,11 +46,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Rutas de autenticaciÃ³n que ya existÃ­an
+# Rutas de autenticacion que ya existi­an
 app.include_router(auth_router)
 
 
-# ConfiguraciÃ³n de HTML y archivos estÃ¡ticos
+# Configuracion de HTML y archivos estaticos
 BASE_DIR = Path(__file__).resolve().parent
 
 templates = Jinja2Templates(
@@ -63,8 +64,8 @@ app.mount(
 )
 
 
-# Modelo de entrada para el anÃ¡lisis de Supply Chain
-from pydantic import BaseModel, Field, field_validator
+# Modelo de entrada para el analisis de Supply Chain
+
 
 class DemandRequest(BaseModel):
     product_id: str = Field(min_length=1, max_length=100)
@@ -91,7 +92,7 @@ class DemandRequest(BaseModel):
 
         return value
 
-# PÃ¡gina principal de la API
+# Pagina principal de la API
 @app.get("/")
 def root():
     return {
@@ -136,7 +137,7 @@ def login_form(
             (email,),
         ).fetchone()
 
-    # Mensaje genÃ©rico para credenciales incorrectas
+    # Mensaje generico para credenciales incorrectas
     if (
         user is None
         or not verify_password(password, user["password_hash"])
@@ -146,12 +147,12 @@ def login_form(
             request=request,
             name="login.html",
             context={
-                "error": "Correo o contraseÃ±a incorrectos, o cuenta desactivada."
+                "error": "Correo o contraseña incorrectos, o cuenta desactivada."
             },
             status_code=401,
         )
 
-    # Crear un JWT utilizando el sistema de autenticaciÃ³n existente
+    # Crear un JWT utilizando el sistema de autenticacion existente
     token = create_access_token(
         user_id=user["id"],
         email=user["email"],
@@ -276,7 +277,7 @@ def dashboard(request: Request):
     )
 
 
-# Cerrar la sesiÃ³n
+# Cerrar la sesion
 @app.get("/logout")
 def logout():
     response = RedirectResponse(
@@ -287,7 +288,7 @@ def logout():
     return response
 
 
-# AnÃ¡lisis de Supply Chain: conserva la protecciÃ³n existente
+# Analisis de Supply Chain: conserva la proteccion existente
 
 @app.post("/api/supply-chain/analyze")
 def analyze_supply_chain(
@@ -330,7 +331,7 @@ def analyze_supply_chain(
             "purchasing_analysis": result["purchasing_result"],
         }
 
-        # Guardar el anÃ¡lisis en la base de datos.
+        # Guardar el analisis en la base de datos.
 
         analysis_id = save_supply_chain_analysis(
             response,
@@ -349,7 +350,7 @@ def analyze_supply_chain(
         )
 
 
-# Consultar el historial de anÃ¡lisis de Supply Chain.
+# Consultar el historial de analisis de Supply Chain.
 
 @app.get("/api/supply-chain/history")
 def get_supply_chain_history(
@@ -385,7 +386,7 @@ def get_supply_chain_history(
 
 
 
-# Consultar un anÃ¡lisis especÃ­fico por su identificador.
+# Consultar un analisis especifico por su identificador.
 @app.get("/api/supply-chain/history/{analysis_id}")
 def get_supply_chain_analysis_by_id(
     analysis_id: int,
@@ -407,7 +408,7 @@ def get_supply_chain_analysis_by_id(
     if analysis is None:
         raise HTTPException(
             status_code=404,
-            detail="No se encontrÃ³ el anÃ¡lisis solicitado.",
+            detail="No se encontró el análisis solicitado.",
         )
 
     return analysis
