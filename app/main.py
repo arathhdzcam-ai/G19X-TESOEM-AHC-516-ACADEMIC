@@ -1,17 +1,13 @@
 
 from contextlib import asynccontextmanager
-from pathlib import Path
-from html import escape
 
-import jwt
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+
+
+from fastapi import Depends, FastAPI, HTTPException
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.auth.database import initialize_database, get_db_connection
+from app.auth.database import initialize_database
 from app.supply_chain_database import (
     initialize_supply_chain_database,
     save_supply_chain_analysis,
@@ -22,11 +18,7 @@ from app.supply_chain_database import (
 
 from app.auth.dependencies import get_current_user
 from app.auth.routes import router as auth_router
-from app.auth.security import (
-    verify_password,
-    create_access_token,
-    decode_access_token,
-)
+
 
 from app.orchestration.supply_chain_graph import build_supply_chain_graph
 
@@ -50,23 +42,9 @@ app = FastAPI(
 app.include_router(auth_router)
 
 
-# Configuracion de HTML y archivos estaticos
-BASE_DIR = Path(__file__).resolve().parent
-
-templates = Jinja2Templates(
-    directory=str(BASE_DIR / "templates")
-)
-
-app.mount(
-    "/static",
-    StaticFiles(directory=str(BASE_DIR / "static")),
-    name="static",
-)
 
 
 # Modelo de entrada para el analisis de Supply Chain
-
-
 class DemandRequest(BaseModel):
     product_id: str = Field(min_length=1, max_length=100)
     historical_demand: list[float] = Field(min_length=1, max_length=1000)
@@ -76,6 +54,9 @@ class DemandRequest(BaseModel):
     on_time_delivery_rate: float = Field(ge=0, le=1)
     quality_rate: float = Field(ge=0, le=1)
     supplier_capacity: float = Field(ge=0)
+    lead_time_days: int = Field(default=5, ge=0, le=365)
+    delay_days: int = Field(default=0, ge=0, le=365)
+    safety_stock: float = Field(default=20, ge=0)
 
     @field_validator("product_id", "supplier_id")
     @classmethod
@@ -99,194 +80,12 @@ def root():
         "application": "Supply Chain Agentic",
         "status": "online",
         "message": "API funcionando correctamente",
-        "login": "/login",
     }
 
 
 @app.get("/health")
 def health():
     return {"status": "healthy"}
-
-
-# Mostrar el formulario de inicio de sesiÃ³n
-@app.get("/login", response_class=HTMLResponse)
-def login_page(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="login.html",
-        context={"error": None},
-    )
-
-
-# Procesar las credenciales del formulario
-@app.post("/login")
-def login_form(
-    request: Request,
-    email: str = Form(...),
-    password: str = Form(...),
-):
-    email = email.strip().lower()
-
-    with get_db_connection() as connection:
-        user = connection.execute(
-            """
-            SELECT id, email, password_hash, is_active
-            FROM users
-            WHERE email = ?
-            """,
-            (email,),
-        ).fetchone()
-
-    # Mensaje generico para credenciales incorrectas
-    if (
-        user is None
-        or not verify_password(password, user["password_hash"])
-        or not user["is_active"]
-    ):
-        return templates.TemplateResponse(
-            request=request,
-            name="login.html",
-            context={
-                "error": "Correo o contraseña incorrectos, o cuenta desactivada."
-            },
-            status_code=401,
-        )
-
-    # Crear un JWT utilizando el sistema de autenticacion existente
-    token = create_access_token(
-        user_id=user["id"],
-        email=user["email"],
-    )
-
-    response = RedirectResponse(
-        url="/dashboard",
-        status_code=303,
-    )
-
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-        max_age=1800,
-        path="/",
-    )
-
-    return response
-
-
-# Panel protegido: requiere una sesiÃ³n vÃ¡lida
-@app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request):
-    token = request.cookies.get("access_token")
-
-    if not token:
-        return RedirectResponse(
-            url="/login",
-            status_code=303,
-        )
-
-    try:
-        payload = decode_access_token(token)
-        user_id = int(payload["sub"])
-
-    except (
-        jwt.InvalidTokenError,
-        ValueError,
-        KeyError,
-        TypeError,
-    ):
-        response = RedirectResponse(
-            url="/login",
-            status_code=303,
-        )
-        response.delete_cookie("access_token", path="/")
-        return response
-
-    # Comprobar que la cuenta siga existiendo y activa
-    with get_db_connection() as connection:
-        user = connection.execute(
-            """
-            SELECT id, email, is_active
-            FROM users
-            WHERE id = ?
-            """,
-            (user_id,),
-        ).fetchone()
-
-    if user is None or not user["is_active"]:
-        response = RedirectResponse(
-            url="/login",
-            status_code=303,
-        )
-        response.delete_cookie("access_token", path="/")
-        return response
-
-    safe_email = escape(user["email"])
-
-    return HTMLResponse(
-        f"""
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport"
-                  content="width=device-width, initial-scale=1">
-            <title>SupplyChainAgentic | Panel principal</title>
-            <style>
-                body {{
-                    margin: 0;
-                    padding: 40px;
-                    font-family: "Segoe UI", Arial, sans-serif;
-                    background: #f5f7fb;
-                    color: #17243a;
-                }}
-                main {{
-                    max-width: 850px;
-                    margin: 50px auto;
-                    padding: 35px;
-                    background: white;
-                    border-radius: 16px;
-                    box-shadow: 0 8px 35px #17243a12;
-                }}
-                h1 {{ color: #126d78; }}
-                .logout {{
-                    display: inline-block;
-                    margin-top: 20px;
-                    padding: 12px 18px;
-                    background: #126d78;
-                    color: white;
-                    border-radius: 8px;
-                    text-decoration: none;
-                }}
-            </style>
-        </head>
-        <body>
-            <main>
-                <h1>SupplyChainAgentic</h1>
-                <h2>Bienvenido al panel principal</h2>
-                <p>SesiÃ³n iniciada como:
-                   <strong>{safe_email}</strong></p>
-                <p>Tu acceso a la plataforma ha sido validado.</p>
-                <a class="logout" href="/logout">Cerrar sesiÃ³n</a>
-            </main>
-        </body>
-        </html>
-        """
-    )
-
-
-# Cerrar la sesion
-@app.get("/logout")
-def logout():
-    response = RedirectResponse(
-        url="/login",
-        status_code=303,
-    )
-    response.delete_cookie("access_token", path="/")
-    return response
-
 
 # Analisis de Supply Chain: conserva la proteccion existente
 
@@ -307,6 +106,9 @@ def analyze_supply_chain(
             "on_time_delivery_rate": request.on_time_delivery_rate,
             "quality_rate": request.quality_rate,
             "supplier_capacity": request.supplier_capacity,
+            "lead_time_days": request.lead_time_days,
+            "delay_days": request.delay_days,
+            "safety_stock": request.safety_stock,
             "supplier_result": {},
             "demand_result": {},
             "ai_demand_result": {},
@@ -314,7 +116,7 @@ def analyze_supply_chain(
             "inventory_result": {},
             "purchasing_result": {},
             "sourcing_result": {},
-            "logistics_result": {},
+                        "logistics_result": {},
         }
 
         result = graph.invoke(initial_state)

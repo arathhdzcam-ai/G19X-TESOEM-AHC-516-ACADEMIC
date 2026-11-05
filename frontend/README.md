@@ -1,16 +1,22 @@
-# React + Vite
+﻿# Frontend - SupplyChainAgentic
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Esta carpeta contiene el scaffold inicial de React y Vite.
 
-Currently, two official plugins are available:
+## Estado actual
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+El frontend de React todavía no está integrado con el backend ni forma parte del flujo principal de ejecución.
 
-## React Compiler
+La interfaz actualmente funcional de SupplyChainAgentic está desarrollada con NiceGUI y se comunica con la API de FastAPI.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Ejecución actual del proyecto
 
-## Expanding the Oxlint configuration
+Desde la raíz del repositorio:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- Backend: `python -m uvicorn app.main:app --reload`
+- Interfaz: `python -m app.ui`
+
+La interfaz estará disponible en `http://127.0.0.1:8080` y la documentación de la API en `http://127.0.0.1:8000/docs`.
+
+## Trabajo futuro
+
+Este scaffold puede utilizarse posteriormente para desarrollar una interfaz React integrada con los endpoints de FastAPI.

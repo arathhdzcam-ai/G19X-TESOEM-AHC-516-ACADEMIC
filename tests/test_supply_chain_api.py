@@ -87,6 +87,9 @@ def valid_payload():
         "on_time_delivery_rate": 0.95,
         "quality_rate": 0.98,
         "supplier_capacity": 200,
+        "lead_time_days": 5,
+        "delay_days": 0,
+        "safety_stock": 20,
     }
 
 
@@ -201,8 +204,8 @@ def test_analyze_rejects_invalid_identifiers(
 
     assert response.status_code == 422
 
-def test_api_history_is_isolated_between_users(api_client, monkeypatch):
-    monkeypatch.setattr(
+    def test_api_history_is_isolated_between_users(api_client, monkeypatch):
+     monkeypatch.setattr(
         main,
         "build_supply_chain_graph",
         lambda: FakeGraph(),
@@ -232,3 +235,33 @@ def test_api_history_is_isolated_between_users(api_client, monkeypatch):
         f"/api/supply-chain/history/{analysis_id}"
     )
     assert detail.status_code == 404
+
+
+def test_api_passes_user_parameters_to_graph(api_client, monkeypatch):
+    captured_state = {}
+
+    class CaptureGraph:
+        def invoke(self, state):
+            captured_state.update(state)
+            return fake_graph_result(state)
+
+    monkeypatch.setattr(
+        main,
+        "build_supply_chain_graph",
+        lambda: CaptureGraph(),
+    )
+
+    payload = valid_payload()
+    payload["lead_time_days"] = 12
+    payload["delay_days"] = 4
+    payload["safety_stock"] = 35
+
+    response = api_client.post(
+        "/api/supply-chain/analyze",
+        json=payload,
+    )
+
+    assert response.status_code == 200
+    assert captured_state["lead_time_days"] == 12
+    assert captured_state["delay_days"] == 4
+    assert captured_state["safety_stock"] == 35

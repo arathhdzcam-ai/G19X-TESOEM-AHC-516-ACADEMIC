@@ -13,6 +13,9 @@ def test_supply_chain_graph_completes_analysis():
         "on_time_delivery_rate": 0.95,
         "quality_rate": 0.98,
         "supplier_capacity": 200,
+        "lead_time_days": 5,
+        "delay_days": 0,
+        "safety_stock": 20,
     }
 
     result = graph.invoke(initial_state)
@@ -47,6 +50,9 @@ def test_supply_chain_graph_recommends_purchase_when_inventory_is_low():
         "on_time_delivery_rate": 0.95,
         "quality_rate": 0.98,
         "supplier_capacity": 200,
+                "lead_time_days": 5,
+        "delay_days": 0,
+        "safety_stock": 20,
     }
 
     result = graph.invoke(initial_state)
@@ -73,6 +79,9 @@ def test_supply_chain_graph_skips_purchase_when_inventory_is_sufficient():
         "on_time_delivery_rate": 0.95,
         "quality_rate": 0.98,
         "supplier_capacity": 200,
+                "lead_time_days": 5,
+        "delay_days": 0,
+        "safety_stock": 20,
     }
 
     result = graph.invoke(initial_state)
@@ -119,6 +128,12 @@ def test_supply_chain_graph_uses_traditional_forecast_when_ai_forecast_is_invali
         "on_time_delivery_rate": 0.95,
         "quality_rate": 0.98,
         "supplier_capacity": 200,
+        "lead_time_days": 5,
+        "delay_days": 0,
+        "safety_stock": 20,
+                "lead_time_days": 5,
+        "delay_days": 0,
+        "safety_stock": 20,
     }
 
     result = graph.invoke(initial_state)
@@ -129,3 +144,42 @@ def test_supply_chain_graph_uses_traditional_forecast_when_ai_forecast_is_invali
     assert result["forecast_comparison"]["traditional_forecast"] == 120
     assert result["inventory_result"]["forecast_demand"] == 120
     assert result["sourcing_result"]["forecast_demand"] == 120
+
+
+    def test_supply_chain_graph_uses_user_delay_days():
+     graph = build_supply_chain_graph()
+
+    base_state = {
+        "product_id": "TEST-SKU-DELAY",
+        "historical_demand": [100, 120, 110, 130, 140],
+        "forecast_periods": 3,
+        "current_inventory": 1000,
+        "supplier_id": "TEST-SUP-001",
+        "on_time_delivery_rate": 0.98,
+        "quality_rate": 0.98,
+        "supplier_capacity": 200,
+        "lead_time_days": 7,
+        "delay_days": 0,
+        "safety_stock": 20,
+    }
+
+    result_without_delay = graph.invoke(base_state)
+
+    state_with_delay = {
+        **base_state,
+        "delay_days": 3,
+    }
+
+    result_with_delay = graph.invoke(state_with_delay)
+
+    logistics_without_delay = result_without_delay["logistics_result"]
+    logistics_with_delay = result_with_delay["logistics_result"]
+
+    assert logistics_without_delay["delay_days"] == 0
+    assert logistics_without_delay["priority"] == "low"
+
+    assert logistics_with_delay["delay_days"] == 3
+    assert logistics_with_delay["priority"] == "high"
+    assert logistics_with_delay["delivery_status"] == "delayed"
+
+    assert logistics_with_delay["lead_time_days"] == 7

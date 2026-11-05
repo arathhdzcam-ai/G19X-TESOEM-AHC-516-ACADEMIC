@@ -1,9 +1,7 @@
 
 from nicegui import app as nicegui_app, ui
 
-from app.auth.config import JWT_SECRET_KEY
-from app.auth.database import get_db_connection
-from app.auth.security import verify_password, create_access_token
+from app.auth.config import STORAGE_SECRET_KEY
 
 import httpx
 from nicegui import run
@@ -36,35 +34,26 @@ def index():
 
 @ui.page("/login")
 def login_page():
-    ui.query("body").style("background-color: #f5f7fb")
 
     with ui.column().classes(
-        "w-full min-h-screen items-center justify-center p-4"
+        "w-full min-h-screen items-center justify-center p-6"
     ):
-        with ui.card().classes("w-full max-w-md p-8 rounded-xl"):
-            with ui.column().classes("w-full items-center gap-1"):
-                ui.label("SC").classes(
-                    "text-3xl font-bold text-primary"
-                )
-                ui.label("SUPPLYCHAINAGENTIC").classes(
-                    "text-lg font-bold"
-                )
-                ui.label("Plataforma inteligente de Supply Chain").classes(
-                    "text-sm text-gray-500 text-center"
-                )
 
-            ui.separator().classes("my-4")
+        with ui.card().classes(
+            "w-full max-w-md p-8 rounded-xl shadow-lg"
+        ):
 
-            ui.label("Bienvenido de nuevo").classes(
-                "text-2xl font-bold"
+            ui.label("SupplyChainAgentic").classes(
+                "text-3xl font-bold text-primary"
             )
-            ui.label("Ingresa tus credenciales para continuar.").classes(
-                "text-gray-500 text-sm"
-            )
+
+            ui.label(
+                "Inicia sesión para acceder a la plataforma."
+            ).classes("text-gray-500 mb-4")
 
             email_input = ui.input(
                 "Correo electrónico",
-                placeholder="nombre@empresa.com",
+                placeholder="usuario@empresa.com",
             ).classes("w-full")
 
             password_input = ui.input(
@@ -73,10 +62,16 @@ def login_page():
                 password_toggle_button=True,
             ).classes("w-full")
 
-            error_label = ui.label("").classes("text-red-600 text-sm")
+            error_label = ui.label("").classes(
+                "text-red-600 text-sm"
+            )
 
-            def login():
-                email = (email_input.value or "").strip().lower()
+            async def login():
+
+                email = (
+                    email_input.value or ""
+                ).strip().lower()
+
                 password = password_input.value or ""
 
                 if not email or not password:
@@ -85,41 +80,63 @@ def login_page():
                     )
                     return
 
-                with get_db_connection() as connection:
-                    user = connection.execute(
-                        """
-                        SELECT id, email, password_hash, is_active
-                        FROM users
-                        WHERE email = ?
-                        """,
-                        (email,),
-                    ).fetchone()
+                error_label.set_text(
+                    "Validando credenciales..."
+                )
 
-                if (
-                    user is None
-                    or not verify_password(
-                        password,
-                        user["password_hash"] if user else "",
+                try:
+                    response = await run.io_bound(
+                        httpx.post,
+                        "http://127.0.0.1:8000/api/auth/login",
+                        json={
+                            "email": email,
+                            "password": password,
+                        },
+                        timeout=10.0,
                     )
-                    or not user["is_active"]
-                ):
+
+                except httpx.RequestError:
+                    error_label.set_text(
+                        "No se pudo conectar con FastAPI."
+                    )
+                    return
+
+                if response.status_code == 401:
                     error_label.set_text(
                         "Correo o contraseña incorrectos."
                     )
                     return
 
+                if response.status_code == 403:
+                    error_label.set_text(
+                        "La cuenta está desactivada."
+                    )
+                    return
 
-                token = create_access_token(
-                    user_id=user["id"],
-                    email=user["email"],
+                if response.status_code != 200:
+                    error_label.set_text(
+                        f"Error de autenticación "
+                        f"({response.status_code})."
+                    )
+                    return
+
+                data = response.json()
+
+                nicegui_app.storage.user["access_token"] = (
+                    data["access_token"]
                 )
 
-                nicegui_app.storage.user["user_id"] = user["id"]
-                nicegui_app.storage.user["email"] = user["email"]
-                nicegui_app.storage.user["access_token"] = token
+                nicegui_app.storage.user["user_id"] = (
+                    data["user_id"]
+                )
+
+                nicegui_app.storage.user["email"] = (
+                    data["email"]
+                )
+
+                error_label.set_text("")
 
                 ui.navigate.to("/dashboard")
-
 
             ui.button(
                 "Iniciar sesión",
@@ -128,12 +145,9 @@ def login_page():
 
             ui.label(
                 "Acceso protegido · SupplyChainAgentic"
-            ).classes("w-full text-center text-xs text-gray-400 mt-4")
-
-
-
-
-
+            ).classes(
+                "w-full text-center text-xs text-gray-400 mt-4"
+            )
 
 
 @ui.page("/dashboard")
@@ -257,10 +271,10 @@ def dashboard_page():
                 "Capa de orquestación inteligente"
             ).classes("text-lg font-bold")
             ui.label(
-                "Los agentes se coordinan mediante LangGraph. "
-                "En el siguiente paso conectaremos este panel "
-                "con el análisis real de Supply Chain."
-            ).classes("text-sm text-gray-600")
+    "Los agentes especializados se coordinan mediante LangGraph "
+    "para analizar la demanda, el inventario, las compras, "
+    "el abastecimiento y la logística con los datos proporcionados."
+).classes("text-sm text-gray-600")
 
 
         ui.label("Análisis de Supply Chain").classes(
@@ -317,6 +331,30 @@ def dashboard_page():
                 min=0,
             ).classes("w-full")
 
+
+            lead_time_input = ui.number(
+                "Tiempo de entrega (días)",
+                value=5,
+                min=0,
+                max=365,
+                precision=0,
+            ).classes("w-full")
+
+            delay_input = ui.number(
+                "Días de retraso",
+                value=0,
+                min=0,
+                max=365,
+                precision=0,
+            ).classes("w-full")
+
+            safety_stock_input = ui.number(
+                "Inventario de seguridad",
+                value=20,
+                min=0,
+                precision=2,
+            ).classes("w-full")
+
             status_label = ui.label("")
             result_area = ui.column().classes("w-full gap-3")
 
@@ -357,6 +395,9 @@ def dashboard_page():
                         "on_time_delivery_rate": float(delivery_input.value),
                         "quality_rate": float(quality_input.value),
                         "supplier_capacity": float(capacity_input.value or 0),
+                        "lead_time_days": int(lead_time_input.value or 0),
+                        "delay_days": int(delay_input.value or 0),
+                        "safety_stock": float(safety_stock_input.value or 0),
                     }
 
                     token = nicegui_app.storage.user.get("access_token")
@@ -936,11 +977,10 @@ def dashboard_page():
 
 
 if __name__ == "__main__":
-    print('hola')
     ui.run(
         title="SupplyChainAgentic",
         host="127.0.0.1",
         port=8080,
-        storage_secret=JWT_SECRET_KEY,
+        storage_secret=STORAGE_SECRET_KEY,
         reload=False,
     )

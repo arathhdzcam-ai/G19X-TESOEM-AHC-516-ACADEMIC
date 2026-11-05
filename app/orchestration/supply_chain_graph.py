@@ -30,6 +30,9 @@ class SupplyChainState(TypedDict):
     purchasing_result: dict
     sourcing_result: dict
     logistics_result: dict
+    lead_time_days: int
+    delay_days: int
+    safety_stock: float
 
 
 
@@ -126,7 +129,7 @@ def compare_forecasts(state: SupplyChainState) -> SupplyChainState:
 def analyze_inventory(state: SupplyChainState) -> SupplyChainState:
     forecast_demand = get_safe_ai_forecast(state)
 
-    agent = InventoryAgent(safety_stock=20)
+    agent = InventoryAgent(safety_stock=state["safety_stock"])
     result = agent.analyze(
         current_inventory=state["current_inventory"],
         forecast_demand=forecast_demand,
@@ -145,7 +148,7 @@ def analyze_sourcing(state: SupplyChainState) -> SupplyChainState:
         product_id=state["product_id"],
         forecast_demand=forecast_demand,
         current_inventory=state["current_inventory"],
-        safety_stock=20,
+               safety_stock=state["safety_stock"],
         supplier_capacity=state["supplier_capacity"],
     )
 
@@ -157,8 +160,8 @@ def analyze_logistics(state: SupplyChainState) -> SupplyChainState:
     agent = LogisticsAgent()
     result = agent.analyze(
         on_time_delivery_rate=state["on_time_delivery_rate"],
-        lead_time_days=5,
-        delay_days=0,
+        lead_time_days=state["lead_time_days"],
+        delay_days=state["delay_days"],
     )
 
     return {**state, "logistics_result": result}

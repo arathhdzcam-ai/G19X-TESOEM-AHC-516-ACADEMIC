@@ -103,4 +103,6 @@ def login(request: LoginRequest):
         "access_token": token,
         "token_type": "bearer",
         "expires_in": 1800,
+        "user_id": user["id"],
+        "email": user["email"],
     }

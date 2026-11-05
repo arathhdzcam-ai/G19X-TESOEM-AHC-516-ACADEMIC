@@ -24,6 +24,15 @@ if not JWT_SECRET_KEY or len(JWT_SECRET_KEY) < 32:
         "aleatoria de al menos 32 caracteres."
     )
 
+# Clave independiente para proteger el almacenamiento de NiceGUI.
+STORAGE_SECRET_KEY = os.getenv("SUPPLYCHAIN_STORAGE_SECRET")
+
+if not STORAGE_SECRET_KEY or len(STORAGE_SECRET_KEY) < 32:
+    raise RuntimeError(
+        "Configura SUPPLYCHAIN_STORAGE_SECRET con una clave "
+        "aleatoria de al menos 32 caracteres."
+    )
+
 # Configuración del token
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_MINUTES = 30

@@ -1,30 +1,31 @@
 # SupplyChainAgentic
 
-
-
 **Arquitectura Agentic para la gestión inteligente de Supply Chain**
 
 ## 1. Descripción del proyecto
 
-SupplyChainAgentic es una aplicación que implementa una arquitectura basada en agentes inteligentes especializados para apoyar el análisis y la toma de decisiones en la cadena de suministro.
-La solución utiliza una capa de orquestación con LangGraph para coordinar los agentes y presenta los resultados mediante una interfaz web con autenticación de usuarios.
+SupplyChainAgentic es una aplicación académica que implementa una arquitectura basada en agentes inteligentes especializados para apoyar el análisis y la toma de decisiones en la cadena de suministro.
+
+Los agentes se coordinan mediante LangGraph. Sus funcionalidades se exponen a través de una API desarrollada con FastAPI y una interfaz web construida con NiceGUI.
 
 ### Objetivo general
 
-Desarrollar una arquitectura Agentic para optimizar integralmente la cadena de suministro mediante agentes inteligentes, integración de servicios de inteligencia artificial y automatización de procesos.
+Desarrollar una arquitectura Agentic para optimizar integralmente la cadena de suministro mediante agentes especializados, integración de inteligencia artificial, automatización y persistencia de información.
 
 ### Funcionalidades principales
 
-- Análisis de demanda histórica y pronóstico de demanda mediante inteligencia artificial.
-- Comparación de pronósticos.
-- Análisis de inventario.
-- Monitoreo de proveedores.
-- Evaluación de necesidades de compra.
+- Análisis de demanda histórica y generación de pronósticos.
+- Pronóstico asistido por IA y comparación con el pronóstico tradicional.
+- Mecanismo de respaldo determinista cuando el servicio de IA no está disponible.
+- Análisis de inventario e inventario de seguridad configurable.
+- Monitoreo y evaluación de proveedores.
+- Análisis de abastecimiento y necesidades de compra.
+- Análisis logístico con tiempo de entrega y días de retraso configurables.
 - Orquestación de agentes mediante LangGraph.
-- API desarrollada con FastAPI.
-- Interfaz web desarrollada con NiceGUI.
-- Autenticación de usuarios.
-- Integración con Azure OpenAI mediante Microsoft Entra ID.
+- API REST con FastAPI.
+- Interfaz web con NiceGUI.
+- Autenticación mediante JWT.
+- Historial de análisis persistido y aislado por usuario.
 
 ## 2. Tecnologías utilizadas
 
@@ -34,31 +35,31 @@ Desarrollar una arquitectura Agentic para optimizar integralmente la cadena de s
 | FastAPI | API y servicios del sistema |
 | LangGraph | Orquestación de agentes |
 | LangChain | Componentes para aplicaciones con modelos de lenguaje |
-| Azure OpenAI | Análisis de demanda mediante IA |
-| Microsoft Entra ID | Autenticación para acceder a Azure |
+| Azure OpenAI | Pronóstico de demanda asistido por IA |
+| Azure Identity | Obtención de credenciales mediante `DefaultAzureCredential` |
+| Microsoft Entra ID | Identidad utilizada para acceder a Azure |
 | NiceGUI | Interfaz web |
-| SQLite | Persistencia local de los datos de autenticación |
+| SQLite | Persistencia de usuarios e historial de análisis |
 | Pydantic | Validación de datos |
-| Pytest | Pruebas automatizadas |
+| PyJWT | Gestión de tokens JWT |
+| pytest | Pruebas automatizadas |
 | Git y GitHub | Control de versiones |
 
 ## 3. Requisitos previos
 
-Antes de instalar el proyecto, se necesita:
-
 - Windows 10 u 11.
 - Python 3.12.
 - Git.
-- Visual Studio con las herramientas de desarrollo de Python.
-- Acceso al repositorio del proyecto.
-- Una cuenta de Azure con permisos para utilizar el recurso de Azure OpenAI configurado.
-- Una credencial compatible con `DefaultAzureCredential` de Azure Identity.
+- Visual Studio con herramientas de desarrollo de Python.
+- Acceso al repositorio.
+- Una cuenta de Azure con acceso al recurso de Azure OpenAI, si se utilizará el pronóstico mediante IA.
+- Una credencial compatible con `DefaultAzureCredential`.
 
-La aplicación se ejecuta localmente. Sin embargo, las operaciones que utilizan Azure OpenAI requieren acceso al servicio y pueden consumir cuota o generar cargos según la suscripción y sus condiciones.
+La aplicación se ejecuta localmente. Las solicitudes que utilizan Azure OpenAI requieren acceso al servicio y pueden consumir cuota o generar cargos según la suscripción y sus condiciones.
 
 ## 4. Obtener el código fuente
 
-Abre PowerShell o la terminal de Visual Studio y ejecuta:
+Abre PowerShell o la terminal de Visual Studio:
 
 ```powershell
 git clone https://github.com/arathhdzcam-ai/G19X-TESOEM-AHC-516-ACADEMIC.git
@@ -70,324 +71,316 @@ Entra en la carpeta del repositorio:
 cd G19X-TESOEM-AHC-516-ACADEMIC
 ```
 
-Comprueba que estás en la carpeta raíz del proyecto. Debes poder localizar archivos como `README.md`, `requirements.txt` y la carpeta `app`.
+Comprueba que estás en la raíz del proyecto, donde se encuentran `README.md`, `requirements.txt` y la carpeta `app`.
 
-Si se trabaja desde Visual Studio, abre el proyecto `SupplyChainAgentic.pyproj` si está disponible en la copia descargada y utiliza una terminal situada en la carpeta raíz del proyecto.
+## 5. Crear el entorno virtual
 
-## 5. Crear el entorno virtual de Python
-
-Desde la carpeta raíz del proyecto, ejecuta:
+Desde la raíz del proyecto:
 
 ```powershell
 py -3.12 -m venv .venv
 ```
 
-Activa el entorno virtual:
+Activa el entorno:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-La terminal debe mostrar `(.venv)` al principio de la línea.
-
-Comprueba la versión de Python:
+Comprueba la versión:
 
 ```powershell
 python --version
 ```
 
-Comprueba que se utiliza el intérprete del entorno virtual:
+Comprueba el intérprete utilizado:
 
 ```powershell
 python -c "import sys; print(sys.executable)"
 ```
 
-La ruta debe terminar en:
+La ruta debe corresponder a `.venv\Scripts\python.exe`.
 
-```text
-.venv\Scripts\python.exe
-```
-
-Si PowerShell impide activar el entorno por la política de ejecución, se puede utilizar temporalmente esta opción en la terminal actual:
+Si PowerShell impide activar el entorno, puedes permitirlo temporalmente en la sesión actual:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-Después, vuelve a ejecutar el comando de activación. Esta opción solo modifica la política de ejecución de la sesión actual de PowerShell.
+Después vuelve a ejecutar el comando de activación.
 
 ## 6. Instalar las dependencias
 
-Con el entorno virtual activo, ejecuta:
+Actualiza pip:
 
 ```powershell
 python -m pip install --upgrade pip
 ```
 
-Instala las dependencias declaradas en `requirements.txt`:
+Instala las dependencias:
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-Comprueba que no existan conflictos conocidos entre las dependencias:
+Comprueba los conflictos conocidos:
 
 ```powershell
 python -m pip check
 ```
 
-El resultado esperado es:
+## 7. Configurar las variables de entorno
 
-```text
-No broken requirements found.
+El proyecto utiliza variables de entorno para separar la configuración y las credenciales del código fuente.
+
+En la raíz del repositorio, copia el archivo de ejemplo:
+
+```powershell
+Copy-Item .env.example .env
 ```
 
-## 7. Configurar el acceso a Azure OpenAI
+Abre `.env` y configura las variables correspondientes:
 
-El proyecto utiliza el cliente centralizado definido en:
+```dotenv
+SUPPLYCHAIN_JWT_SECRET=REEMPLAZA_CON_UN_SECRETO_ALEATORIO
+AZURE_OPENAI_ENDPOINT=https://TU-RECURSO.services.ai.azure.com/openai/v1
+AZURE_OPENAI_DEPLOYMENT=gpt-5-mini
+```
+
+### Variables utilizadas
+
+| Variable | Descripción |
+|---|---|
+| `SUPPLYCHAIN_JWT_SECRET` | Secreto utilizado para firmar los tokens JWT. Debe tener al menos 32 caracteres. |
+| `AZURE_OPENAI_ENDPOINT` | Endpoint del recurso de Azure, incluida la ruta `/openai/v1`. |
+| `AZURE_OPENAI_DEPLOYMENT` | Nombre del despliegue de modelo disponible en el recurso. |
+
+Para generar un secreto aleatorio desde Python puedes ejecutar:
+
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Copia el resultado directamente en tu archivo `.env`. No lo publiques ni lo compartas.
+
+El endpoint y el despliegue se leen desde variables de entorno; no deben configurarse mediante valores reales incrustados en el código.
+
+### 7.1 Autenticación con Azure
+
+El cliente centralizado se encuentra en:
 
 ```text
 app/core/azure_openai.py
 ```
 
-Actualmente, la configuración del proyecto utiliza el endpoint de Azure AI con la ruta `/openai/v1` y el despliegue `gpt-5-mini`.
+La aplicación utiliza `DefaultAzureCredential` de Azure Identity para obtener un token de Microsoft Entra ID.
 
-Antes de ejecutar análisis que utilicen IA, comprueba que el endpoint y el nombre del despliegue correspondan al recurso al que tienes acceso.
-
-### 7.1 Autenticarse con Azure
-
-La aplicación utiliza `DefaultAzureCredential` para obtener las credenciales de Microsoft Entra ID.
-
-Si Azure CLI está instalado y configurado, abre una terminal y ejecuta:
+Si utilizas Azure CLI, inicia sesión:
 
 ```powershell
 az login
 ```
 
-Comprueba la cuenta activa:
+Comprueba la suscripción activa:
 
 ```powershell
 az account show
 ```
 
-Si existen varias suscripciones, selecciona la que contiene el recurso correspondiente antes de continuar.
+La identidad seleccionada debe contar con los permisos necesarios para invocar el despliegue de Azure OpenAI.
 
-La identidad utilizada debe tener los permisos necesarios para invocar el despliegue de Azure OpenAI. Si la autenticación falla, revisa la identidad seleccionada, los permisos asignados y la configuración del recurso.
-
-No es necesario copiar claves, contraseñas ni tokens directamente en el código fuente.
-
-**Importante:** autenticarse en Azure no garantiza por sí solo que el despliegue esté disponible. También deben ser correctos el endpoint, el nombre del modelo desplegado y los permisos de acceso.
-
-### 7.2 Verificar la configuración
-
-Antes de ejecutar análisis que utilicen inteligencia artificial, comprueba lo siguiente:
-
-- El endpoint corresponde al recurso de Azure configurado para el proyecto.
-- El nombre del despliegue coincide con el disponible en ese recurso.
-- La identidad utilizada por `DefaultAzureCredential` tiene los permisos necesarios.
-- La conexión de red permite acceder al servicio.
-
-Para comprobar que Azure CLI reconoce la cuenta activa, ejecuta en PowerShell:
-
-```powershell
-az account show
-```
-
-Si el comando falla porque no hay una sesión activa, inicia sesión con:
-
-```powershell
-az login
-```
-
-Estos comandos comprueban la sesión de Azure CLI, pero no garantizan por sí solos que una solicitud a Azure OpenAI vaya a funcionar.
-
-No publiques claves, tokens, contraseñas ni archivos `.env` que contengan información confidencial en el repositorio.
+La autenticación correcta no garantiza por sí sola que el servicio esté disponible. También deben coincidir el endpoint, el despliegue y los permisos.
 
 ## 8. Iniciar la aplicación
 
-La aplicación tiene dos servicios que deben ejecutarse simultáneamente:
+La solución utiliza dos procesos independientes:
 
-- API de FastAPI en el puerto `8000`.
-- Interfaz web de NiceGUI en el puerto `8080`.
+- FastAPI: puerto `8000`.
+- NiceGUI: puerto `8080`.
 
-Para ejecutar SupplyChainAgentic, abre dos terminales de PowerShell en la carpeta raíz del proyecto.
+### 8.1 Iniciar FastAPI
 
-### 1. Iniciar la API de FastAPI
-
-En la primera terminal, activa el entorno virtual si todavía no está activo y ejecuta:
+En una primera terminal:
 
 ```powershell
 python -m uvicorn app.main:app --reload
 ```
 
-Espera a que aparezca un mensaje similar a:
-
-```text
-Application startup complete.
-```
-
-Mantén esta terminal abierta mientras utilizas la aplicación.
-
-La documentación interactiva de la API estará disponible en:
+La documentación interactiva estará disponible en:
 
 http://127.0.0.1:8000/docs
 
-### 2. Iniciar la interfaz web de NiceGUI
+Mantén esta terminal abierta.
 
-Abre una segunda terminal de PowerShell en la misma carpeta raíz del proyecto. Activa el entorno virtual si es necesario y ejecuta:
+### 8.2 Iniciar NiceGUI
+
+En una segunda terminal, desde la raíz del proyecto:
 
 ```powershell
 python -m app.ui
 ```
 
-Mantén también esta terminal abierta mientras utilizas la interfaz web.
-
-La interfaz web se encuentra en:
+La interfaz web estará disponible en:
 
 http://127.0.0.1:8080
 
-### 3. Detener la aplicación
+Mantén también esta terminal abierta.
 
-Cuando termines de trabajar, puedes detener cada proceso presionando `Ctrl + C` en su respectiva terminal.
+Para detener los procesos, presiona `Ctrl + C` en cada terminal.
 
-**Importante:** la API y la interfaz web son procesos independientes. Para utilizar la aplicación completa, inicia ambos y mantenlos en ejecución.
+## 9. Registro e inicio de sesión
 
+El sistema dispone de los siguientes endpoints:
 
-## 9. Crear una cuenta e iniciar sesión
+- `POST /api/auth/register`: registro de usuarios.
+- `POST /api/auth/login`: autenticación y emisión del token.
 
-La aplicación dispone de endpoints para registrar usuarios e iniciar sesión. Si todavía no existe una cuenta en la base de datos local, debe crearse antes de acceder al panel.
+Para registrar una cuenta:
 
-Para registrar la primera cuenta:
-
-1. Confirma que la API de FastAPI esté ejecutándose.
+1. Inicia FastAPI.
 2. Abre http://127.0.0.1:8000/docs.
 3. Localiza `POST /api/auth/register`.
 4. Selecciona **Try it out**.
-5. Introduce un correo electrónico válido y una contraseña de entre 12 y 128 caracteres.
+5. Envía un correo válido y una contraseña de entre 12 y 128 caracteres.
 
-Ejemplo de estructura de la solicitud:
+Ejemplo ficticio:
 
 ```json
 {
   "email": "usuario@ejemplo.com",
-  "password": "UsaUnaContrasenaPropia123!"
+  "password": "EjemploSeguro123!"
 }
 ```
 
-El ejemplo es ilustrativo: utiliza una contraseña propia y no reutilices credenciales personales.
+6. Ejecuta la solicitud.
+7. Abre http://127.0.0.1:8080.
+8. Inicia sesión con la cuenta registrada.
 
-6. Ejecuta la solicitud y comprueba que el registro haya sido satisfactorio.
-7. Regresa a http://127.0.0.1:8080.
-8. Introduce el correo y la contraseña que acabas de registrar.
-
-Una vez autenticado, utiliza el panel web para realizar los análisis de la cadena de suministro.
-
-La cuenta se almacena en la base de datos local de autenticación del proyecto. Si se utiliza una instalación nueva, no se debe asumir que las cuentas existentes en otra computadora estarán disponibles.
+La interfaz NiceGUI utiliza `POST /api/auth/login` para autenticar al usuario. La validación de credenciales se centraliza en la API.
 
 ## 10. Utilizar el sistema
 
-Desde el panel de SupplyChainAgentic:
+Una vez autenticado, el usuario puede acceder al panel de análisis.
 
-1. Introduce los datos de entrada solicitados por el formulario.
-2. Ejecuta el análisis.
-3. Espera a que finalice el procesamiento.
-4. Consulta los resultados de los agentes.
+El formulario permite proporcionar información como:
 
-El flujo de análisis puede incluir:
-
+- Identificador del producto.
 - Demanda histórica.
-- Pronóstico de demanda mediante IA.
-- Comparación de pronósticos.
-- Análisis de inventario.
-- Análisis de proveedores.
-- Evaluación de compras.
+- Periodos de pronóstico.
+- Inventario actual.
+- Identificador del proveedor.
+- Indicadores de entregas a tiempo y calidad.
+- Capacidad del proveedor.
+- Tiempo de entrega en días.
+- Días de retraso.
+- Inventario de seguridad.
 
-El resultado depende de los datos introducidos, las reglas implementadas en los agentes y la disponibilidad del servicio de IA.
+Los tres últimos parámetros se envían a la API y se propagan por LangGraph para su utilización en los agentes de inventario, abastecimiento y logística.
+
+Los resultados pueden incluir:
+
+- Pronóstico tradicional y pronóstico asistido por IA.
+- Comparación de pronósticos.
+- Evaluación de inventario.
+- Evaluación de proveedores.
+- Recomendaciones de abastecimiento y compras.
+- Resultados logísticos.
+- Alertas y resumen ejecutivo.
+
+Las recomendaciones de compra son informativas: el sistema no ejecuta órdenes de compra reales ni se conecta automáticamente con sistemas externos de proveedores o transportistas.
+
+### 10.1 Historial de análisis
+
+Los análisis se almacenan en SQLite y quedan asociados al usuario autenticado.
+
+La API ofrece:
+
+- `GET /api/supply-chain/history`: consulta paginada del historial del usuario.
+- `GET /api/supply-chain/history/{analysis_id}`: consulta del detalle de un análisis propio.
+
+La API restringe las consultas al usuario autenticado. Un usuario no debe poder recuperar los análisis pertenecientes a otra cuenta.
+
+La interfaz permite consultar el historial y acceder al detalle de los análisis disponibles para la sesión.
 
 ## 11. Ejecutar las pruebas automatizadas
 
-El resultado de las pruebas depende de la versión del código y del entorno.
+Utiliza el intérprete del entorno virtual para evitar ejecutar pytest desde otra instalación de Python.
 
-Para ejecutar las pruebas automatizadas, abre PowerShell en la carpeta raíz del proyecto y ejecuta:
+Con el entorno virtual activo:
 
 ```powershell
-python -m pytest -q
+python -m pytest -v
 ```
 
-El número y el resultado de las pruebas pueden variar si cambia el código, las dependencias o el conjunto de pruebas.
+También puedes utilizar la ruta completa:
 
+```powershell
+& "C:\Users\panda\Downloads\Proyectos\SupplyChainAgentic\.venv\Scripts\python.exe" -m pytest -v
+```
 
-## 12. Solución de problemas frecuentes
+**Última validación registrada:** 58 pruebas aprobadas. Este resultado corresponde a la versión probada el 4 de noviembre de 2026; después de modificar el código se debe ejecutar nuevamente la suite.
 
-Las pruebas automatizadas no sustituyen la comprobación manual del inicio de sesión, la interfaz web, la API y la conexión con Azure OpenAI.
+## 12. Solución de problemas
 
 ### Python no encuentra pytest
 
-Comprueba que estés utilizando el entorno virtual del proyecto. Desde la carpeta raíz, ejecuta:
+Comprueba el intérprete:
 
 ```powershell
 python -c "import sys; print(sys.executable)"
 ```
 
-La ruta debe corresponder al intérprete de Python del entorno virtual `.venv`. Para ejecutar las pruebas, utiliza:
+Debe corresponder al entorno virtual `.venv`.
 
-```powershell
-python -m pytest -q
-```
+### NiceGUI no puede conectarse con FastAPI
 
-Si falta alguna dependencia, instala las dependencias del proyecto desde el archivo `requirements.txt`.
+Comprueba que FastAPI esté activo en el puerto `8000` y NiceGUI en el `8080`.
 
-### La interfaz no puede conectarse con FastAPI
-
-Comprueba que el servidor de FastAPI esté activo en el puerto `8000` y que la interfaz de NiceGUI esté ejecutándose en el puerto `8080`.
-
-Abre la documentación de la API para comprobar que responde:
+Abre:
 
 http://127.0.0.1:8000/docs
 
 ### No se puede iniciar sesión
 
-Comprueba que hayas registrado una cuenta, que el correo y la contraseña sean correctos y que la base de datos local de autenticación esté disponible.
+Comprueba que la cuenta esté registrada, que la API esté activa y que el correo y la contraseña sean correctos.
 
 ### Error de autenticación con Azure
 
-Comprueba que la credencial de Microsoft Entra ID esté disponible para `DefaultAzureCredential`, que la identidad tenga los permisos necesarios y que el endpoint y el despliegue sean correctos.
+Comprueba que exista una credencial disponible para `DefaultAzureCredential`, que la identidad tenga los permisos necesarios y que las variables de entorno sean correctas.
 
-### El análisis falla al invocar Azure OpenAI
+### Error al invocar Azure OpenAI
 
-Comprueba la conectividad, los permisos, el despliegue, la disponibilidad del servicio y los límites de cuota. Evita repetir llamadas innecesariamente, ya que pueden consumir cuota.
+Comprueba conectividad, permisos, endpoint, nombre del despliegue y cuota disponible. Evita repetir llamadas innecesariamente.
 
-### El puerto ya está ocupado
+### Puerto ocupado
 
-Si otro proceso está utilizando el puerto `8000` o `8080`, identifica el proceso que corresponde y detenlo si ya no lo necesitas. También puedes configurar un puerto alternativo, siempre que actualices las direcciones correspondientes en la configuración de la API y la interfaz.
-
-Para comprobar qué proceso utiliza un puerto en PowerShell, ejecuta:
+Para revisar el puerto 8000:
 
 ```powershell
 netstat -ano | findstr :8000
 ```
 
-Para revisar el puerto de la interfaz web, ejecuta:
+Para revisar el puerto 8080:
 
 ```powershell
 netstat -ano | findstr :8080
 ```
 
-La última columna muestra el identificador del proceso (PID). Antes de detenerlo, comprueba que sea el proceso correcto.
+Identifica el PID antes de detener cualquier proceso.
 
 ## 13. Seguridad
 
-- No publiques claves, contraseñas, tokens ni secretos en GitHub.
-- No incluyas credenciales reales en el README ni en otros archivos de documentación.
-- Mantén las credenciales locales en el archivo `.env` cuando la configuración de la aplicación lo permita.
-- Comprueba que `.env` esté incluido en `.gitignore` para evitar subirlo accidentalmente al repositorio.
-- Si existe un archivo `.env.example`, utiliza únicamente nombres de variables y valores de ejemplo ficticios, nunca credenciales reales.
-- Utiliza contraseñas propias y seguras para crear las cuentas de acceso.
-- Concede únicamente los permisos de Azure necesarios para utilizar el servicio.
-- Antes de ejecutar pruebas que invoquen Azure OpenAI, comprueba su propósito y el posible consumo de cuota.
-- No publiques datos confidenciales de proveedores, productos o inventarios.
-- Si una credencial real se publica accidentalmente, revócala o rótala; eliminarla del archivo no garantiza que desaparezca del historial de Git.
+- No publiques secretos, contraseñas ni tokens en GitHub.
+- Mantén `.env` fuera del repositorio mediante `.gitignore`.
+- Utiliza `.env.example` únicamente con valores ficticios.
+- No incluyas credenciales reales en la documentación.
+- Protege los endpoints privados mediante autenticación.
+- Mantén el aislamiento del historial por usuario.
+- No publiques datos confidenciales de proveedores o inventarios.
+- Si una credencial real se expone, revócala o rótala; eliminarla del archivo no la elimina del historial de Git.
+
 ## 14. Estructura principal del proyecto
+
 ```text
 SupplyChainAgentic/
 ├── app/
@@ -410,23 +403,35 @@ SupplyChainAgentic/
 │   ├── orchestration/
 │   │   └── supply_chain_graph.py
 │   ├── static/
-│   │   └── login.css
 │   ├── templates/
-│   │   └── login.html
 │   ├── main.py
 │   ├── supply_chain_database.py
-│   ├── test_connection.py
 │   └── ui.py
+├── docs/
+│   └── MVP.md
+├── frontend/
 ├── tests/
+├── .env.example
+├── .gitignore
 ├── requirements.txt
 ├── README.md
 └── SupplyChainAgentic.pyproj
 ```
 
-La estructura anterior muestra los componentes principales. La presencia de archivos adicionales puede variar según la versión del repositorio.
+`app/agents/` contiene los agentes especializados; `app/auth/` concentra la autenticación; `app/orchestration/` define el flujo de LangGraph; y `app/supply_chain_database.py` administra la persistencia de los análisis.
 
-## 15. Estado del proyecto
+La interfaz actualmente implementada para el MVP es NiceGUI. La carpeta `frontend/` conserva una plantilla de Vite y no constituye una interfaz React integrada al flujo funcional del MVP.
 
-SupplyChainAgentic integra agentes especializados, una capa de orquestación con LangGraph, una API con FastAPI, una interfaz web con NiceGUI y un cliente de Azure OpenAI.
+## 15. Uso de asistencia de inteligencia artificial
 
-El proyecto está orientado a demostrar cómo coordinar agentes inteligentes para apoyar procesos de demanda, inventario, proveedores y compras dentro de una arquitectura de Supply Chain.
+Durante el desarrollo y la documentación de SupplyChainAgentic se utilizó un asistente de inteligencia artificial como apoyo para tareas de escritura, revisión y mejora del código.
+
+Las propuestas generadas se revisan y validan por el desarrollador mediante inspección del código, pruebas automatizadas y comprobaciones de funcionamiento. La responsabilidad sobre la integración y validación final del proyecto corresponde al desarrollador.
+
+## 16. Estado del proyecto
+
+SupplyChainAgentic cuenta con una API FastAPI, una interfaz NiceGUI, autenticación JWT, persistencia SQLite, orquestación LangGraph y agentes especializados para apoyar el análisis de la cadena de suministro.
+
+El pronóstico asistido por IA está integrado mediante Azure OpenAI. Los demás agentes trabajan principalmente con reglas y cálculos deterministas.
+
+El sistema constituye una base funcional para demostrar la coordinación de agentes y la generación de recomendaciones. Las integraciones empresariales y el despliegue productivo quedan sujetos a futuras etapas de desarrollo y validación.
