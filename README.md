@@ -428,8 +428,6 @@ SupplyChainAgentic/
 │   │   └── azure_openai.py
 │   ├── orchestration/
 │   │   └── supply_chain_graph.py
-│   ├── static/
-│   ├── templates/
 │   ├── main.py
 │   ├── supply_chain_database.py
 │   └── ui.py

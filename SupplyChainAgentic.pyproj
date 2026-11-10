@@ -50,13 +50,9 @@
     <Folder Include="app\agents\" />
     <Folder Include="app\core\" />
     <Folder Include="app\auth\" />
-    <Folder Include="app\static\" />
-    <Folder Include="app\templates\" />
     <Folder Include="app\orchestration\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="app\static\login.css" />
-    <Content Include="app\templates\login.html" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

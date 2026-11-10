@@ -1,3 +1,4 @@
+import os
 
 from nicegui import app as nicegui_app, ui
 
@@ -5,6 +6,8 @@ from app.auth.config import STORAGE_SECRET_KEY
 
 import httpx
 from nicegui import run
+
+API_BASE_URL = os.getenv("SUPPLYCHAIN_API_URL", "http://127.0.0.1:8000")
 
 
 
@@ -18,10 +21,6 @@ from nicegui import run
 
 
 
-nicegui_app.add_static_files(
-    "/static",
-    "app/static",
-)
 
 
 @ui.page("/")
@@ -87,7 +86,7 @@ def login_page():
                 try:
                     response = await run.io_bound(
                         httpx.post,
-                        "http://127.0.0.1:8000/api/auth/login",
+                        f"{API_BASE_URL}/api/auth/login",
                         json={
                             "email": email,
                             "password": password,
@@ -410,7 +409,7 @@ def dashboard_page():
 
                     response = await run.io_bound(
                         httpx.post,
-                        "http://127.0.0.1:8000/api/supply-chain/analyze",
+                        f"{API_BASE_URL}/api/supply-chain/analyze",
                         json=payload,
                         headers={"Authorization": f"Bearer {token}"},
                         timeout=60.0,
@@ -794,7 +793,7 @@ def dashboard_page():
                 try:
                     response = await run.io_bound(
                         httpx.get,
-                        "http://127.0.0.1:8000/api/supply-chain/history",
+                        f"{API_BASE_URL}/api/supply-chain/history",
                         params={"limit": 20, "offset": 0},
                         headers={"Authorization": f"Bearer {token}"},
                         timeout=30.0,
@@ -900,7 +899,7 @@ def dashboard_page():
                 try:
                     response = await run.io_bound(
                         httpx.get,
-                        f"http://127.0.0.1:8000/api/supply-chain/history/{analysis_id}",
+                        f"{API_BASE_URL}/api/supply-chain/history/{analysis_id}",
                         headers={"Authorization": f"Bearer {token}"},
                         timeout=30.0,
                     )

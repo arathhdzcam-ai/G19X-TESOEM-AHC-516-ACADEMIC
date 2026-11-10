@@ -38,7 +38,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Rutas de autenticacion que ya existi­an
+# Rutas de autenticacion existentes
 app.include_router(auth_router)
 
 
