@@ -1,4 +1,4 @@
-﻿# MVP - SupplyChainAgentic
+# MVP - SupplyChainAgentic# MVP - SupplyChainAgentic
 
 ## 1. Descripción del proyecto
 
@@ -334,16 +334,16 @@ Cada evolución deberá contar con criterios de aceptación y pruebas antes de c
 
 La última ejecución completa registrada de la suite de pruebas fue:
 
-`58 passed in 49.94s`
+`58 passed in 47.90s`
 
-La ejecución se realizó el 4 de noviembre de 2026 mediante el entorno virtual del proyecto.
+La ejecución se realizó el 10 de noviembre de 2026 mediante el entorno virtual del proyecto.
 
 Este resultado corresponde a la versión validada en esa fecha. Cualquier cambio posterior en el código o en las pruebas requiere una nueva ejecución para actualizar la evidencia.
 
 Comando utilizado:
 
 ```powershell
-& "C:\Users\panda\Downloads\Proyectos\SupplyChainAgentic\.venv\Scripts\python.exe" -m pytest -v
+python -m pytest -v
 ```
 
 ## 18. Declaración sobre asistencia de IA
@@ -351,4 +351,3 @@ Comando utilizado:
 Durante el desarrollo y la documentación del proyecto se utilizó un asistente de inteligencia artificial como apoyo para tareas de escritura, revisión y mejora del código.
 
 El desarrollador revisa y valida los resultados mediante inspección del código, pruebas automatizadas y comprobaciones de funcionamiento. La responsabilidad de la integración y validación final corresponde al desarrollador.
-ollador.

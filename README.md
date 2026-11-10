@@ -143,6 +143,7 @@ Abre `.env` y configura las variables correspondientes:
 
 ```dotenv
 SUPPLYCHAIN_JWT_SECRET=REEMPLAZA_CON_UN_SECRETO_ALEATORIO
+SUPPLYCHAIN_STORAGE_SECRET=REEMPLAZA_CON_OTRO_SECRETO_ALEATORIO
 AZURE_OPENAI_ENDPOINT=https://TU-RECURSO.services.ai.azure.com/openai/v1
 AZURE_OPENAI_DEPLOYMENT=gpt-5-mini
 ```
@@ -152,6 +153,7 @@ AZURE_OPENAI_DEPLOYMENT=gpt-5-mini
 | Variable | Descripción |
 |---|---|
 | `SUPPLYCHAIN_JWT_SECRET` | Secreto utilizado para firmar los tokens JWT. Debe tener al menos 32 caracteres. |
+| `SUPPLYCHAIN_STORAGE_SECRET` | Secreto independiente para el almacenamiento de sesiones de NiceGUI. Debe tener al menos 32 caracteres y ser diferente del secreto JWT. |
 | `AZURE_OPENAI_ENDPOINT` | Endpoint del recurso de Azure, incluida la ruta `/openai/v1`. |
 | `AZURE_OPENAI_DEPLOYMENT` | Nombre del despliegue de modelo disponible en el recurso. |
 
@@ -161,9 +163,11 @@ Para generar un secreto aleatorio desde Python puedes ejecutar:
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-Copia el resultado directamente en tu archivo `.env`. No lo publiques ni lo compartas.
+Genera dos valores diferentes con el comando anterior: uno para `SUPPLYCHAIN_JWT_SECRET` y otro para `SUPPLYCHAIN_STORAGE_SECRET`. Copia cada valor en su variable correspondiente dentro de `.env`. No publiques ni compartas estos secretos.
 
 El endpoint y el despliegue se leen desde variables de entorno; no deben configurarse mediante valores reales incrustados en el código.
+
+Si Azure OpenAI no está configurado o disponible, `AIDemandAgent` utiliza el promedio histórico como respaldo (`fallback_used: true`). El resto del análisis puede continuar funcionando.
 
 ### 7.1 Autenticación con Azure
 
@@ -228,7 +232,7 @@ Mantén también esta terminal abierta.
 
 Para detener los procesos, presiona `Ctrl + C` en cada terminal.
 
-## ## 9. Registro e inicio de sesión
+## 9. Registro e inicio de sesión
 
 El sistema dispone de los siguientes endpoints:
 
@@ -249,7 +253,7 @@ El script inicializa la base de datos si es necesario y registra al usuario util
 
 **Credenciales de demostración:**
 
-- Correo: `demo@supplychain.local`
+- Correo: `demo@supplychain.example.com`
 - Contraseña: `DemoSupplyChain2026`
 
 Después de crear la cuenta:
@@ -338,13 +342,9 @@ Con el entorno virtual activo:
 python -m pytest -v
 ```
 
-También puedes utilizar la ruta completa:
 
-```powershell
-& "C:\Users\panda\Downloads\Proyectos\SupplyChainAgentic\.venv\Scripts\python.exe" -m pytest -v
-```
 
-**Última validación registrada:** 58 pruebas aprobadas. Este resultado corresponde a la versión probada el 4 de noviembre de 2026; después de modificar el código se debe ejecutar nuevamente la suite.
+**Última validación registrada:** 58 pruebas aprobadas (`58 passed in 47.90s`), ejecutadas el 10 de noviembre de 2026.
 
 ## 12. Solución de problemas
 
