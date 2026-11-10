@@ -228,20 +228,46 @@ Mantén también esta terminal abierta.
 
 Para detener los procesos, presiona `Ctrl + C` en cada terminal.
 
-## 9. Registro e inicio de sesión
+## ## 9. Registro e inicio de sesión
 
 El sistema dispone de los siguientes endpoints:
 
 - `POST /api/auth/register`: registro de usuarios.
 - `POST /api/auth/login`: autenticación y emisión del token.
 
-Para registrar una cuenta:
+### Opción 1. Crear el usuario de demostración (recomendado)
 
-1. Inicia FastAPI.
-2. Abre http://127.0.0.1:8000/docs.
-3. Localiza `POST /api/auth/register`.
-4. Selecciona **Try it out**.
-5. Envía un correo válido y una contraseña de entre 12 y 128 caracteres.
+Para facilitar la evaluación del sistema, se incluye un script que crea una cuenta de demostración directamente en SQLite.
+
+Desde la carpeta raíz del proyecto, ejecutar:
+
+```powershell
+python -m scripts.crear_usuario_demo
+```
+
+El script inicializa la base de datos si es necesario y registra al usuario utilizando el mismo mecanismo de hash de contraseñas que utiliza la API. Utiliza `INSERT OR IGNORE`, por lo que puede ejecutarse varias veces sin duplicar la cuenta.
+
+**Credenciales de demostración:**
+
+- Correo: `demo@supplychain.local`
+- Contraseña: `DemoSupplyChain2026`
+
+Después de crear la cuenta:
+
+1. Iniciar FastAPI.
+2. Iniciar NiceGUI.
+3. Abrir http://127.0.0.1:8080.
+4. Iniciar sesión con las credenciales de demostración.
+
+### Opción 2. Registrar un usuario desde la API
+
+También es posible registrar una cuenta manualmente:
+
+1. Iniciar FastAPI.
+2. Abrir http://127.0.0.1:8000/docs.
+3. Localizar `POST /api/auth/register`.
+4. Seleccionar **Try it out**.
+5. Enviar un correo válido y una contraseña de entre 12 y 128 caracteres.
 
 Ejemplo ficticio:
 
@@ -252,9 +278,9 @@ Ejemplo ficticio:
 }
 ```
 
-6. Ejecuta la solicitud.
-7. Abre http://127.0.0.1:8080.
-8. Inicia sesión con la cuenta registrada.
+6. Ejecutar la solicitud.
+7. Abrir http://127.0.0.1:8080.
+8. Iniciar sesión con la cuenta registrada.
 
 La interfaz NiceGUI utiliza `POST /api/auth/login` para autenticar al usuario. La validación de credenciales se centraliza en la API.
 
@@ -434,4 +460,4 @@ SupplyChainAgentic cuenta con una API FastAPI, una interfaz NiceGUI, autenticaci
 
 El pronóstico asistido por IA está integrado mediante Azure OpenAI. Los demás agentes trabajan principalmente con reglas y cálculos deterministas.
 
-El sistema constituye una base funcional para demostrar la coordinación de agentes y la generación de recomendaciones. Las integraciones empresariales y el despliegue productivo quedan sujetos a futuras etapas de desarrollo y validación.
+El sistema constituye una base funcional para demostrar la coordinación de agentes y la generación de recomendaciones. Las integraciones empresariales y el despliegue productivo quedan sujetos a futuras etapas de desarrollo y validación
